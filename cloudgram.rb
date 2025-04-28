@@ -12,9 +12,9 @@ class Cloudgram < Formula
 
     system "#{venv_dir}/bin/pip", "install", "-r", "requirements.txt"
 
-    bin.install "cloudgram-install"
+    bin.install "cloudgram.py" => "cloudgram"
 
-    chmod 0755, bin/"cloudgram-install"
+    chmod 0755, bin/"cloudgram"
   end
 
   test do

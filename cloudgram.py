@@ -1,8 +1,10 @@
-import os
 import zipfile
 import argparse
 import json
 import asyncio
+import sys
+import os
+import subprocess
 from datetime import datetime
 from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError
@@ -101,6 +103,15 @@ async def perform_setup(api_id, api_hash, phone_number):
 
 
 def main():
+    venv_dir = os.path.join(os.path.dirname(__file__), 'venv')
+
+    if not os.path.exists(venv_dir):
+        subprocess.run([sys.executable, '-m', 'venv', venv_dir])
+
+    activate_script = os.path.join(venv_dir, 'bin', 'activate_this.py')
+    with open(activate_script) as f:
+        exec(f.read(), dict(__file__=activate_script))
+
     """Main function for processing command-line arguments."""
     parser = argparse.ArgumentParser(description='Send messages to Telegram Saved Messages.')
     subparsers = parser.add_subparsers(dest='command')
