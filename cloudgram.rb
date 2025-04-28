@@ -2,7 +2,7 @@ class Cloudgram < Formula
   desc "Telegram messaging tool"
   homepage "https://github.com/ArturArutunyan/cloudgram"
   url "https://github.com/ArturArutunyan/cloudgram/archive/refs/tags/1.0.2.tar.gz"
-  sha256 "c239904c80ebea8d4e1a6725412fc258a1de34618111a41a45617e9226117dcc"
+  sha256 "477c38deb7f14f75bfa4afc1e877ffc184e3ac9504e6b73525e6ec69a342d8dd"
 
   depends_on "python@3.12"
 
