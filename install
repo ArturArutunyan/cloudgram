@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+import sys
+import os
+import subprocess
+from cloudgram import main
+
+venv_dir = os.path.join(os.path.dirname(__file__), 'venv')
+
+if not os.path.exists(venv_dir):
+    subprocess.run([sys.executable, '-m', 'venv', venv_dir])
+
+activate_script = os.path.join(venv_dir, 'bin', 'activate_this.py')
+with open(activate_script) as f:
+    exec(f.read(), dict(__file__=activate_script))
+
+if __name__ == "__main__":
+    main()
