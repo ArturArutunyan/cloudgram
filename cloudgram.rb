@@ -7,14 +7,16 @@ class Cloudgram < Formula
   depends_on "python@3.12"
 
   def install
-    venv_dir = libexec/"venv"
-    system "python3", "-m", "venv", venv_dir
+      venv_dir = libexec/"venv"
+      system "python3", "-m", "venv", venv_dir.to_s
 
-    system "#{venv_dir}/bin/pip", "install", "-r", "requirements.txt"
+      activate_script = venv_dir/"bin/activate"
+      system "source #{activate_script} && #{venv_dir}/bin/pip install -r requirements.txt"
 
-    bin.install "cloudgram.py" => "cloudgram"
+      bin.install "cloudgram.py" => "cloudgram"
+      chmod 0755, bin/"cloudgram"
 
-    chmod 0755, bin/"cloudgram"
+      inreplace bin/"cloudgram", /^#!.*python.*$/, "#!#{venv_dir}/bin/python"
   end
 
   test do
