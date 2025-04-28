@@ -1,8 +1,8 @@
 class Cloudgram < Formula
   desc "Telegram messaging tool"
   homepage "https://github.com/ArturArutunyan/cloudgram"
-  url "https://github.com/ArturArutunyan/cloudgram/archive/refs/tags/1.0.2.tar.gz"
-  sha256 "477c38deb7f14f75bfa4afc1e877ffc184e3ac9504e6b73525e6ec69a342d8dd"
+  url "https://github.com/ArturArutunyan/cloudgram/archive/refs/tags/1.0.3.tar.gz"
+  sha256 "7a33feb9cf6a8b6f71d830b80dad9fe915d45e2fd8dc56b857787d8b98eefa25"
 
   depends_on "python@3.12"
 
@@ -12,9 +12,9 @@ class Cloudgram < Formula
 
     system "#{venv_dir}/bin/pip", "install", "-r", "requirements.txt"
 
-    bin.install "cloudgram"
+    bin.install "cloudgram-install"
 
-    chmod 0755, bin/"cloudgram"
+    chmod 0755, bin/"cloudgram-install"
   end
 
   test do
