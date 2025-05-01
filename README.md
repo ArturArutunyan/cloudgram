@@ -37,7 +37,7 @@ brew install cloudgram
 
 ## First-Time Setup
 1. Get your Telegram API credentials:
-  -  Visit my.telegram.org
+  -  Visit [my.telegram.org](https://my.telegram.org "Telegram API development platform")
   -  Create new application (Name: CloudGram, Platform: Desktop)
    ```bash
     cloudgram "Test message"
