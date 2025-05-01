@@ -62,7 +62,6 @@ async def send_message(api_id, api_hash, phone_number, message, file_path=None, 
                 password = input("Enter your password: ")
                 await client.sign_in(password=password)
 
-        # Определяем тег по умолчанию
         if tag is None:
             if file_path:
                 tag = "cloudgram_file"
@@ -74,7 +73,7 @@ async def send_message(api_id, api_hash, phone_number, message, file_path=None, 
             f"-----------------------------------------------------------\n\n"
             f"{message}\n\n"
             f"-----------------------------------------------------------\n"
-            f"*This message was sent from rubberytg.*"
+            f"*This message was sent from cloudgram.*"
         )
 
         if file_path:
@@ -108,7 +107,6 @@ def main():
                                            '  setup     Initial API setup\n'
                                            '  send      Send a message')
 
-    # Добавляем подсказку при вводе просто 'cloudgram'
     if len(os.sys.argv) == 1:
         parser.print_help()
         return
@@ -116,14 +114,17 @@ def main():
     subparsers = parser.add_subparsers(dest='command', title='commands')
 
     setup_parser = subparsers.add_parser('setup', help='Initial API setup')
-    setup_parser.add_argument('-i', '--api_id', type=str, required=True, help='API ID')
-    setup_parser.add_argument('-a', '--api_hash', type=str, required=True, help='API Hash')
-    setup_parser.add_argument('-p', '--phone_number', type=str, required=True, help='Phone number')
+    setup_parser.add_argument('-i', type=str, required=True, metavar='API_ID',
+                              help='Telegram API ID (from https://my.telegram.org)')
+    setup_parser.add_argument('-a', type=str, required=True, metavar='API_HASH',
+                              help='Telegram API Hash (https://my.telegram.org)')
+    setup_parser.add_argument('-p', type=str, required=True, metavar='PHONE_NUMBER',
+                              help='Phone number (e.g., +1234567890)')
 
     send_parser = subparsers.add_parser('send', help='Send a message')
-    send_parser.add_argument('-m', '--message', type=str, required=True, help='Message to send')
-    send_parser.add_argument('-f', '--file', type=str, nargs='?', help='Path to file or folder to send')
-    send_parser.add_argument('-t', '--tag', type=str, help='Tag for the message')
+    send_parser.add_argument('-m', type=str, required=True, metavar='TEXT', help='Message text to send')
+    send_parser.add_argument('-f', type=str, nargs='?', metavar='PATH_TO_FILE', help='Attach file/folder (optional)')
+    send_parser.add_argument('-t', type=str, nargs='?', metavar='TAG', help='Custom message tag (optional)')
 
     args = parser.parse_args()
 
