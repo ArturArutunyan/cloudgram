@@ -7,20 +7,27 @@ class Cloudgram < Formula
   depends_on "python@3.12"
 
   def install
-      venv_dir = libexec/"venv"
-      system "python3", "-m", "venv", venv_dir.to_s
+    python = Formula["python@3.12"].opt_bin/"python3.12"
+    system python, "-m", "venv", libexec/"venv"
 
-      activate_script = venv_dir/"bin/activate"
-      system "source #{activate_script} && #{venv_dir}/bin/pip install -r requirements.txt"
+    # Install dependencies first
+    system libexec/"venv/bin/pip", "install", "telethon"
 
-      bin.install "cloudgram.py" => "cloudgram"
-      chmod 0755, bin/"cloudgram"
+    # Copy Python files manually
+    libexec.install Dir["*.py"]
+    libexec.install "cloudgram" if Dir.exist?("cloudgram")
 
-      inreplace bin/"cloudgram", /^#!.*python.*$/, "#!#{venv_dir}/bin/python"
+    (bin/"cloudgram").write <<~EOS
+      #!#{libexec}/venv/bin/python
+      import sys
+      sys.path.insert(0, '#{libexec}')
+      from cloudgram import main
+      if __name__ == "__main__":
+          main()
+    EOS
   end
 
   test do
     system "#{bin}/cloudgram", "--help"
   end
 end
-
