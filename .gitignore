@@ -1,0 +1,53 @@
+### Python ###
+__pycache__/
+*.py[cod]
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.pyc
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+### PyCharm ###
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+.idea/*
+
+# JetBrains templates
+*.jetBrains
+
+# Datasource local storage ignored
+dataSources/
+dataSources.local.xml
+
+# Editor-based Rest Client
+.idea/httpRequests/
+
+### Telegram ###
+*.session
+config.json
+
+### macOS ###
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+### Windows ###
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+### Virtual environment ###
+venv/
+ENV/
