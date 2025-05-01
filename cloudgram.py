@@ -1,10 +1,8 @@
+import os
 import zipfile
 import argparse
 import json
 import asyncio
-import sys
-import os
-import subprocess
 from datetime import datetime
 from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError
@@ -103,18 +101,19 @@ async def perform_setup(api_id, api_hash, phone_number):
 
 
 def main():
-    venv_dir = os.path.join(os.path.dirname(__file__), 'venv')
-
-    if not os.path.exists(venv_dir):
-        subprocess.run([sys.executable, '-m', 'venv', venv_dir])
-
-    activate_script = os.path.join(venv_dir, 'bin', 'activate_this.py')
-    with open(activate_script) as f:
-        exec(f.read(), dict(__file__=activate_script))
-
     """Main function for processing command-line arguments."""
-    parser = argparse.ArgumentParser(description='Send messages to Telegram Saved Messages.')
-    subparsers = parser.add_subparsers(dest='command')
+    parser = argparse.ArgumentParser(description='Send messages to Telegram Saved Messages.',
+                                     usage='cloudgram <command> [options]\n\n'
+                                           'Available commands:\n'
+                                           '  setup     Initial API setup\n'
+                                           '  send      Send a message')
+
+    # Добавляем подсказку при вводе просто 'cloudgram'
+    if len(os.sys.argv) == 1:
+        parser.print_help()
+        return
+
+    subparsers = parser.add_subparsers(dest='command', title='commands')
 
     setup_parser = subparsers.add_parser('setup', help='Initial API setup')
     setup_parser.add_argument('-i', '--api_id', type=str, required=True, help='API ID')
@@ -142,8 +141,9 @@ def main():
         session_name = config['session_name']
 
         asyncio.run(send_message(api_id, api_hash, phone_number, args.message, args.file, args.tag, session_name))
+    else:
+        parser.print_help()
 
 
 if __name__ == '__main__':
     main()
-
