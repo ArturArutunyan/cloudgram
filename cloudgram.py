@@ -5,7 +5,6 @@ import json
 import asyncio
 from datetime import datetime
 from telethon import TelegramClient
-from telethon.errors import SessionPasswordNeededError
 
 CONFIG_FILE = 'config.json'
 
@@ -18,16 +17,15 @@ def load_config():
     return None
 
 
-def save_config(api_id, api_hash, phone_number, session_name):
+def save_config(api_id, api_hash, session_name):
     """Save configuration to file."""
     config = {
         'api_id': api_id,
         'api_hash': api_hash,
-        'phone_number': phone_number,
         'session_name': session_name
     }
     with open(CONFIG_FILE, 'w') as f:
-        json.dump(config, f)
+        json.dump(config, f, indent=4)
 
 
 def create_zip(folder_path):
@@ -38,112 +36,90 @@ def create_zip(folder_path):
     with zipfile.ZipFile(zip_filename, 'w') as zipf:
         for root, _, files in os.walk(folder_path):
             for file in files:
-                zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder_path))
+                file_path = os.path.join(root, file)
+                zipf.write(file_path, os.path.relpath(file_path, folder_path))
 
     print("Zip archive created successfully.")
-
     return zip_filename
 
 
-async def send_message(api_id, api_hash, phone_number, message, file_path=None, tag=None, session_name=None):
+def show_telegram_guide():
+    """Show Telegram API setup guide."""
+    print("\nTo send messages, you need Telegram API credentials:")
+    print("1. Go to https://my.telegram.org/apps")
+    print("2. Create application with these settings:")
+    print("   - App title: CloudGram")
+    print("   - Short name: cloudgram")
+    print("   - Platform: Desktop")
+    print("3. You'll receive API ID and API Hash\n")
+
+
+async def get_telegram_credentials():
+    """Prompt user for Telegram API credentials."""
+    print("Please enter your Telegram API credentials:")
+    api_id = input("API ID: ").strip()
+    api_hash = input("API Hash: ").strip()
+    return api_id, api_hash
+
+
+async def send_message(message, file_path=None, tag=None):
     """Send a message to Telegram."""
-    new_session = False
-    if session_name is None:
-        session_name = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        new_session = True
+    config = load_config()
 
-    async with TelegramClient(session_name, api_id, api_hash) as client:
-        await client.start()
+    if not config or not os.path.exists(f"{config['session_name']}.session"):
+        show_telegram_guide()
+        api_id, api_hash = await get_telegram_credentials()
+        session_name = f"cloudgram_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        save_config(api_id, api_hash, session_name)
+    else:
+        api_id = config['api_id']
+        api_hash = config['api_hash']
+        session_name = config['session_name']
 
-        if isinstance(phone_number, str):
-            try:
-                await client.sign_in(phone_number)
-            except SessionPasswordNeededError:
-                password = input("Enter your password: ")
-                await client.sign_in(password=password)
+    try:
+        async with TelegramClient(session_name, api_id, api_hash) as client:
+            await client.start()
 
-        if tag is None:
+            if tag is None:
+                tag = "cloudgram_file" if file_path else "cloudgram_message"
+
+            formatted_message = (
+                f"[#{tag}]\n"
+                f"-----------------------------------------------------------\n\n"
+                f"{message}\n\n"
+                f"-----------------------------------------------------------\n"
+                f"*Sent via CloudGram*"
+            )
+
             if file_path:
-                tag = "cloudgram_file"
+                if os.path.isdir(file_path):
+                    file_path = create_zip(file_path)
+                print(f"Sending file: {file_path}")
+                await client.send_file('me', file_path, caption=formatted_message)
+                print("File sent successfully.")
+                if file_path.endswith('.zip'):
+                    os.remove(file_path)
             else:
-                tag = "cloudgram_message"
+                await client.send_message('me', formatted_message)
+                print("Message sent successfully!")
 
-        formatted_message = (
-            f"[#{tag}]\n"
-            f"-----------------------------------------------------------\n\n"
-            f"{message}\n\n"
-            f"-----------------------------------------------------------\n"
-            f"*This message was sent from cloudgram.*"
-        )
-
-        if file_path:
-            if os.path.isdir(file_path):
-                file_path = create_zip(file_path)
-            print(f"Sending file: {file_path}")
-            await client.send_file('me', file_path, caption=formatted_message)
-            print("File sent successfully.")
-            if os.path.exists(file_path) and file_path.endswith('.zip'):
-                os.remove(file_path)
-        else:
-            await client.send_message('me', formatted_message)
-            print("Message sent successfully!")
-
-    if new_session:
-        save_config(api_id, api_hash, phone_number, session_name)
-
-
-async def perform_setup(api_id, api_hash, phone_number):
-    """Perform initial setup and save configuration."""
-    session_name = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    save_config(api_id, api_hash, phone_number, session_name)
-    print("Setup completed. Configuration saved.")
+    except Exception as e:
+        print(f"\nError: {str(e)}")
+        if "Cannot use empty API ID" in str(e):
+            print("Invalid API credentials. Please delete config.json and try again.")
 
 
 def main():
     """Main function for processing command-line arguments."""
-    parser = argparse.ArgumentParser(description='Send messages to Telegram Saved Messages.',
-                                     usage='cloudgram <command> [options]\n\n'
-                                           'Available commands:\n'
-                                           '  setup     Initial API setup\n'
-                                           '  send      Send a message')
+    parser = argparse.ArgumentParser(description='Send messages to Telegram Saved Messages.')
 
-    if len(os.sys.argv) == 1:
-        parser.print_help()
-        return
-
-    subparsers = parser.add_subparsers(dest='command', title='commands')
-
-    setup_parser = subparsers.add_parser('setup', help='Initial API setup')
-    setup_parser.add_argument('-i', type=str, required=True, metavar='API_ID',
-                              help='Telegram API ID (from https://my.telegram.org)')
-    setup_parser.add_argument('-a', type=str, required=True, metavar='API_HASH',
-                              help='Telegram API Hash (https://my.telegram.org)')
-    setup_parser.add_argument('-p', type=str, required=True, metavar='PHONE_NUMBER',
-                              help='Phone number (e.g., +1234567890)')
-
-    send_parser = subparsers.add_parser('send', help='Send a message')
-    send_parser.add_argument('-m', type=str, required=True, metavar='TEXT', help='Message text to send')
-    send_parser.add_argument('-f', type=str, nargs='?', metavar='PATH_TO_FILE', help='Attach file/folder (optional)')
-    send_parser.add_argument('-t', type=str, nargs='?', metavar='TAG', help='Custom message tag (optional)')
+    parser.add_argument('message', help='Message text to send')
+    parser.add_argument('-f', '--file', help='Attach file/folder')
+    parser.add_argument('-t', '--tag', help='Custom message tag')
 
     args = parser.parse_args()
 
-    if args.command == 'setup':
-        asyncio.run(perform_setup(args.api_id, args.api_hash, args.phone_number))
-    elif args.command == 'send':
-        config = load_config()
-        if config is None:
-            print("Error: Configuration not found. Please perform initial setup first.")
-            return
-
-        api_id = config['api_id']
-        api_hash = config['api_hash']
-        phone_number = config['phone_number']
-        session_name = config['session_name']
-
-        asyncio.run(send_message(api_id, api_hash, phone_number, args.message, args.file, args.tag, session_name))
-    else:
-        parser.print_help()
+    asyncio.run(send_message(args.message, args.file, args.tag))
 
 
 if __name__ == '__main__':
