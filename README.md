@@ -72,7 +72,7 @@ cloudgram --help
 
   - Session data is stored in cloudgram_*.session files
   - Configuration saved in config.json
-  - To reset credentials, delete these files and restart
+  - To reset credentials, go to the .cloudgram directory, delete these files, and restart
 
 ## Troubleshooting
 
