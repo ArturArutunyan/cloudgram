@@ -4,13 +4,18 @@ import argparse
 import json
 import asyncio
 from datetime import datetime
+from pathlib import Path
 from telethon import TelegramClient
 
-CONFIG_FILE = 'config.json'
+# Path constants
+CLOUDGRAM_DIR = os.path.join(Path.home(), '.cloudgram')
+CONFIG_FILE = os.path.join(CLOUDGRAM_DIR, 'config.json')
 
 
 def load_config():
     """Load configuration from file."""
+    os.makedirs(CLOUDGRAM_DIR, exist_ok=True)  # Create directory if it doesn't exist
+
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as f:
             return json.load(f)
@@ -19,6 +24,8 @@ def load_config():
 
 def save_config(api_id, api_hash, session_name):
     """Save configuration to file."""
+    os.makedirs(CLOUDGRAM_DIR, exist_ok=True)
+
     config = {
         'api_id': api_id,
         'api_hash': api_hash,
@@ -65,19 +72,25 @@ async def get_telegram_credentials():
 async def send_message(message, file_path=None, tag=None):
     """Send a message to Telegram."""
     config = load_config()
+    session_name = None
 
-    if not config or not os.path.exists(f"{config['session_name']}.session"):
+    if config:
+        session_name = config.get('session_name')
+        session_path = os.path.join(CLOUDGRAM_DIR, f"{session_name}.session")
+
+    if not config or not session_name or not os.path.exists(session_path):
         show_telegram_guide()
         api_id, api_hash = await get_telegram_credentials()
         session_name = f"cloudgram_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         save_config(api_id, api_hash, session_name)
+        session_path = os.path.join(CLOUDGRAM_DIR, f"{session_name}.session")
     else:
         api_id = config['api_id']
         api_hash = config['api_hash']
-        session_name = config['session_name']
+        session_path = os.path.join(CLOUDGRAM_DIR, f"{session_name}.session")
 
     try:
-        async with TelegramClient(session_name, api_id, api_hash) as client:
+        async with TelegramClient(session_path, api_id, api_hash) as client:
             await client.start()
 
             if tag is None:
@@ -112,11 +125,9 @@ async def send_message(message, file_path=None, tag=None):
 def main():
     """Main function for processing command-line arguments."""
     parser = argparse.ArgumentParser(description='Send messages to Telegram Saved Messages.')
-
-    parser.add_argument('message', help='Message text to send')
+    parser.add_argument('message', help='Message text')
     parser.add_argument('-f', '--file', help='Attach file/folder')
     parser.add_argument('-t', '--tag', help='Custom message tag')
-
     args = parser.parse_args()
 
     asyncio.run(send_message(args.message, args.file, args.tag))
