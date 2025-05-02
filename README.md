@@ -1,8 +1,8 @@
-# CloudGram
+# Cloudgram
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-CloudGram is a command-line tool for sending messages and files to your Telegram Saved Messages. Perfect for quick notes, file backups, or syncing content across devices.
+Cloudgram is a command-line tool for sending messages and files to your Telegram Saved Messages. Perfect for quick notes, file backups, or syncing content across devices.
 
 ## Features
 
@@ -38,7 +38,7 @@ brew install cloudgram
 ## First-Time Setup
 1. Get your Telegram API credentials:
   -  Visit [my.telegram.org](https://my.telegram.org "Telegram API development platform")
-  -  Create new application (Name: CloudGram, Platform: Desktop)
+  -  Create new application (Name: Cloudgram, Platform: Desktop)
    ```bash
     cloudgram "Test message"
    ```
@@ -48,7 +48,7 @@ brew install cloudgram
 ### Basic Commands
 ```bash
 # Send simple message
-cloudgram "Hello from CloudGram!"
+cloudgram "Hello from Cloudgram!"
 
 # Send message with custom tag
 cloudgram "Important note" -t important
@@ -78,7 +78,7 @@ cloudgram --help
 
 If you get authentication errors:
   1. Delete config.json and session files
-  2. Restart CloudGram
+  2. Restart Cloudgram
   3. Re-enter your API credentials
 
 ## License
